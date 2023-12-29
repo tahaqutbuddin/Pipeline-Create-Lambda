@@ -1,0 +1,18 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: LambdaDeployFunction@1
+  inputs:
+    awsCredentials: 'logixos-task1-connection'
+    regionName: 'us-east-1'
+    deploymentMode: 'codeandconfiguration'
+    functionName: 'logixos-task2'
+    functionHandler: 'lambda_handler'
+    runtime: 'python3.8'
+    codeLocation: 'localfile'
+    logRequest: true
+    logResponse: true
