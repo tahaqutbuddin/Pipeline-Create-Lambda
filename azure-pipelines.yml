@@ -16,4 +16,4 @@ steps:
     codeLocation: 'localfile'
     logRequest: true
     logResponse: true
-    roleARN: arn:aws:iam::355385224066:role/logixos-role
+    roleARN: 'arn:aws:iam::355385224066:role/logixos-role'
