@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     except ValueError:
         return {
             'statusCode': 400,
-            'body': json.dumps('Invalid parameter value. Please provide valid integers.')
+            'body': json.dumps('Invalid parameter value.')
         }
     result = parameter1 + parameter2
     return {
