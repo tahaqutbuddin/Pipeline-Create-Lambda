@@ -1,39 +1,67 @@
-trigger:
-- main
-
-pool:
-  vmImage: ubuntu-latest
-
-jobs:
-- job: Zip code and move to s3
-  steps:
-    - task: ArchiveFiles@2
-      inputs:
-        rootFolderOrFile: '$(Build.BinariesDirectory)'
-        includeRootFolder: true
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/Lambda.zip'
-        replaceExistingArchive: true
-    - task: S3Upload@1
-      inputs:
-        awsCredentials: 'logixos-task1-connection'
-        regionName: 'us-east-1'
-        bucketName: 'logixos-task'
-        globExpressions: '**'
-        targetFolder: 'task2'
-        filesAcl: 'public-read'
-
-- job: Deploy Lambda Function
-  steps:
-    - task: LambdaDeployFunction@1
-      inputs:
-        awsCredentials: 'logixos-task1-connection'
-        regionName: 'us-east-1'
-        deploymentMode: 'codeandconfiguration'
-        functionName: 'logixos-task2'
-        functionHandler: 'lambda_handler'
-        runtime: 'python3.8'
-        codeLocation: 'localfile'
-        logRequest: true
-        logResponse: true
-        roleARN: 'arn:aws:iam::355385224066:role/logixos-role'
+stages:
+- stage: Build
+  jobs:
+  - job: BuildLambdaFunction
+    pool:
+      vmImage: 'ubuntu-latest'
+    continueOnError: false
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '12.x'
+        displayName: 'Install Node.js'
+      - script: |
+          npm install
+          npm run lint
+          npm test
+        displayName: 'NPM install, lint, and test'
+      - task: ArchiveFiles@2
+        inputs:
+          rootFolderOrFile: '$(Build.SourcesDirectory)'
+          includeRootFolder: true
+          archiveType: 'zip'
+          archiveFile: '$(Build.ArtifactStagingDirectory)/LambdaBuild.zip'
+          replaceExistingArchive: true
+          verbose: true
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(Pipeline.Workspace)'
+          artifact: 'LambdaBuild'
+          publishLocation: 'pipeline'
+- stage: DevelopmentDeployment
+  dependsOn: Build
+  jobs:
+  - deployment: LambdaDevelopment
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'Development'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - task: LambdaDeployFunction@1
+              inputs:
+                awsCredentials: 'logixos-task1-connection'
+                regionName: 'us-east-1'
+                deploymentMode: 'codeandconfiguration'
+                functionName: 'logixos-task2'
+                functionHandler: 'lambda_handler'
+                runtime: 'python3.8'
+                codeLocation: 'localfile'
+                logRequest: true
+                logResponse: true
+                roleARN: 'arn:aws:iam::355385224066:role/logixos-role'
+            - task: S3Upload@1
+              inputs:
+                awsCredentials: 'logixos-task1-connection'
+                regionName: 'us-east-1'
+                bucketName: 'logixos-task'
+                sourceFolder: '$(Pipeline.Workspace)/LambdaBuild/a/'
+                globExpressions: 'LambdaBuild.zip'
+                targetFolder: 'task2'
+                filesAcl: 'public-read'
+                keyManagement: 'awsManaged'
+                encryptionAlgorithm: 'AES256'
+                logRequest: true
+                logResponse: true 
+            
