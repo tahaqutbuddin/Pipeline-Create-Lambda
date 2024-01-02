@@ -14,11 +14,13 @@ stages:
           archiveFile: '$(Build.ArtifactStagingDirectory)/LambdaBuild.zip'
           replaceExistingArchive: true
           verbose: true
+        displayName: 'Archiving Files'
       - task: PublishPipelineArtifact@1
         inputs:
           targetPath: '$(Pipeline.Workspace)'
           artifact: 'LambdaBuild'
           publishLocation: 'pipeline'
+        displayName: 'Move artifact into workspace pipeline'
 - stage: DevelopmentDeployment
   dependsOn: Build
   jobs:
