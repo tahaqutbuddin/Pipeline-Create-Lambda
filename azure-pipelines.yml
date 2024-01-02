@@ -32,18 +32,6 @@ stages:
       runOnce:
         deploy:
           steps:
-            - task: LambdaDeployFunction@1
-              inputs:
-                awsCredentials: 'logixos-task1-connection'
-                regionName: 'us-east-1'
-                deploymentMode: 'codeandconfiguration'
-                functionName: 'logixos-task2'
-                functionHandler: 'lambda_handler'
-                runtime: 'python3.8'
-                codeLocation: 'localfile'
-                logRequest: true
-                logResponse: true
-                roleARN: 'arn:aws:iam::355385224066:role/logixos-role'
             - task: S3Upload@1
               inputs:
                 awsCredentials: 'logixos-task1-connection'
@@ -57,4 +45,32 @@ stages:
                 encryptionAlgorithm: 'AES256'
                 logRequest: true
                 logResponse: true 
+            # - task: LambdaDeployFunction@1
+            #   inputs:
+            #     awsCredentials: 'logixos-task1-connection'
+            #     regionName: 'us-east-1'
+            #     deploymentMode: 'codeandconfiguration'
+            #     functionName: 'logixos-task2'
+            #     functionHandler: 'lambda_handler'
+            #     runtime: 'python3.8'
+            #     codeLocation: 
+            #     logRequest: true
+            #     logResponse: true
+            #     roleARN: ''
+            - task: LambdaDeployFunction@1
+              inputs:
+                awsCredentials: 'logixos-task1-connection'
+                regionName: 'us-east-1'
+                deploymentMode: 'codeandconfiguration'
+                functionName: 'logixos-task2'
+                functionHandler: 'lambda_handler'
+                runtime: 'python3.8'
+                codeLocation: 's3object'
+                s3Bucket: 'logixos-task'
+                s3ObjectKey: 'LambdaBuild.zip'
+                roleARN: 'arn:aws:iam::355385224066:role/logixos-role'
+                logRequest: true
+                logResponse: true
+              
+            
             
