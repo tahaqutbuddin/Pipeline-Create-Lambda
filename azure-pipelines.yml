@@ -7,6 +7,13 @@ pool:
 jobs:
 - job: Zip code and move to s3
   steps:
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.BinariesDirectory)'
+        includeRootFolder: true
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/Lambda.zip'
+        replaceExistingArchive: true
     - task: S3Upload@1
       inputs:
         awsCredentials: 'logixos-task1-connection'
